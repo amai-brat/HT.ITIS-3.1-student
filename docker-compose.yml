@@ -7,26 +7,57 @@ services:
       POSTGRES_DB: homework
     
   dotnet_main:
-    image: dotnet-web
+    image: dotnet-web-main
     build:
       context: .
       dockerfile: Dotnet.Homeworks.MainProject/Dockerfile
     ports:
       - "8080:80"
     environment:
+      ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Default: "Host=dotnet_postgres;Username=user;Password=password;Database=homework"
+      RabbitMqConfig__Username: rahmatullin
+      RabbitMqConfig__Password: rahmat
+      RabbitMqConfig__Hostname: dotnet_rabbitmq
     depends_on:
       - dotnet_postgres
+      - dotnet_rabbitmq
 
-#  dotnet_mailing:
-#    image: dotnet-web
-#    
+  dotnet_mailing:
+    image: dotnet-web-mailing
+    build:
+      context: .
+      dockerfile: Dotnet.Homeworks.Mailing.API/Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://*:8081
+      RabbitMqConfig__Username: rahmatullin
+      RabbitMqConfig__Password: rahmat
+      RabbitMqConfig__Hostname: dotnet_rabbitmq
+      EmailConfig__Email: lenagolovach@gmail.com
+      EmailConfig__Host: smtp.gmail.com
+      EmailConfig__Port: 587
+      EmailConfig__Password: abobabaobab
+    depends_on:
+      - dotnet_rabbitmq
+      
+  dotnet_rabbitmq:
+    image: rabbitmq:3-management-alpine
+    hostname: dotnet_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: rahmatullin
+      RABBITMQ_DEFAULT_PASS: rahmat
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: -rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648
+    ports:
+      - "15672:15672"
+    volumes:
+      - ~/volumes/hw_rabbitmq:/var/lib/rabbitmq:rw
+
 #  dotnet_storage:
 #    image: dotnet-web
 #    
-#  dotnet_rabbitmq:
-#    image: rabbitmq:3-alpine
-#  
 #  dotnet_minio:
 #    image: minio/minio:latest
 #  
