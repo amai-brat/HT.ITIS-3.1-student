@@ -4,14 +4,17 @@ using Dotnet.Homeworks.Features.Products.Commands.InsertProduct;
 using Dotnet.Homeworks.Features.Products.Queries.GetProducts;
 using Dotnet.Homeworks.Infrastructure.Cqrs.Commands;
 using Dotnet.Homeworks.Infrastructure.Cqrs.Queries;
+using Dotnet.Homeworks.Infrastructure.Services;
 using Dotnet.Homeworks.Infrastructure.UnitOfWork;
 using Dotnet.Homeworks.Infrastructure.Validation.PermissionChecker.DependencyInjectionExtensions;
+using Dotnet.Homeworks.Mailing.API.Services;
 using Dotnet.Homeworks.MainProject.Controllers;
 using Dotnet.Homeworks.Mediator.DependencyInjectionExtensions;
 using Dotnet.Homeworks.Shared.Dto;
 using Dotnet.Homeworks.Tests.Shared.RepositoriesMocks;
 using Dotnet.Homeworks.Tests.Shared.TestEnvironmentBuilder;
 using FluentValidation;
+using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -50,6 +53,14 @@ internal class CqrsEnvironmentBuilder : TestEnvironmentBuilder<CqrsEnvironment>
         configureServices += s => s
             .AddSingleton<ProductManagementController>()
             .AddSingleton<UserManagementController>()
+            
+            // Тесты не учитывают задание:
+            // Перенести вызов RegistrationService из контроллера в хэндлер создания пользователя.
+            .AddSingleton<IRegistrationService, RegistrationService>()
+            .AddSingleton<ICommunicationService, CommunicationService>()
+            .AddSingleton(Substitute.For<IMailingService>())
+            .AddMassTransitTestHarness()
+            
             .AddSingleton<IProductRepository>(ProductRepositoryMock)
             .AddSingleton<IUserRepository>(UserRepositoryMock)
             .AddSingleton(HttpContextAccessorMock)

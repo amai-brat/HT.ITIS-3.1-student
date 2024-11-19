@@ -5,8 +5,8 @@ using Dotnet.Homeworks.Features.Users.Commands.CreateUser;
 using Dotnet.Homeworks.Features.Users.Commands.DeleteUser;
 using Dotnet.Homeworks.Features.Users.Commands.UpdateUser;
 using Dotnet.Homeworks.Features.Users.Queries.GetUser;
-using Dotnet.Homeworks.MainProject.Dto;
-using Dotnet.Homeworks.MainProject.Services;
+using Dotnet.Homeworks.Infrastructure.Dto;
+using Dotnet.Homeworks.Infrastructure.Services;
 using Dotnet.Homeworks.Mediator;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,22 +15,17 @@ namespace Dotnet.Homeworks.MainProject.Controllers;
 [ApiController]
 public class UserManagementController : ControllerBase
 {
-    private readonly IRegistrationService _registrationService;
     private readonly IMediator _mediator;
 
     public UserManagementController(
-        IRegistrationService registrationService,
         IMediator mediator)
     {
-        _registrationService = registrationService;
         _mediator = mediator;
     }
 
     [HttpPost("user")]
     public async Task<IActionResult> CreateUser(RegisterUserDto userDto, CancellationToken cancellationToken)
     {
-        await _registrationService.RegisterAsync(userDto);
-        
         var result = await _mediator.Send(new CreateUserCommand(userDto.Name, userDto.Email), cancellationToken);
         return result.IsSuccess 
             ? Ok(result.Value)

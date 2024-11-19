@@ -1,6 +1,8 @@
 ﻿using Dotnet.Homeworks.Domain.Abstractions.Repositories;
 using Dotnet.Homeworks.Domain.Entities;
 using Dotnet.Homeworks.Infrastructure.Cqrs.Commands;
+using Dotnet.Homeworks.Infrastructure.Dto;
+using Dotnet.Homeworks.Infrastructure.Services;
 using Dotnet.Homeworks.Infrastructure.UnitOfWork;
 using Dotnet.Homeworks.Infrastructure.Validation.Decorators;
 using Dotnet.Homeworks.Infrastructure.Validation.PermissionChecker;
@@ -15,16 +17,19 @@ public class CreateUserCommandHandler :
 {
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IRegistrationService _registrationService;
 
     public CreateUserCommandHandler(
         IEnumerable<IValidator<CreateUserCommand>> validators,
         IPermissionChecker permissionChecker,
         IUserRepository userRepository,
-        IUnitOfWork unitOfWork
+        IUnitOfWork unitOfWork,
+        IRegistrationService registrationService
         ) : base(validators, permissionChecker)
     {
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
+        _registrationService = registrationService;
     }
 
     public override async Task<Result<CreateUserDto>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
@@ -45,6 +50,8 @@ public class CreateUserCommandHandler :
 
             var id = await _userRepository.InsertUserAsync(user, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+            
+            await _registrationService.RegisterAsync(new RegisterUserDto(request.Name, request.Email));
 
             return new Result<CreateUserDto>(new CreateUserDto(id), true);
         }
