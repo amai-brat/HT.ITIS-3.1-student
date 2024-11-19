@@ -1,7 +1,7 @@
-﻿using Dotnet.Homeworks.MainProject.Dto;
+﻿using Dotnet.Homeworks.Infrastructure.Dto;
 using Dotnet.Homeworks.Shared.MessagingContracts.Email;
 
-namespace Dotnet.Homeworks.MainProject.Services;
+namespace Dotnet.Homeworks.Infrastructure.Services;
 
 public class RegistrationService : IRegistrationService
 {
@@ -18,6 +18,10 @@ public class RegistrationService : IRegistrationService
         await Task.Delay(100);
         
         // publish message to a queue
-        await _communicationService.SendEmailAsync(new SendEmail("", "", "", ""));
+        await _communicationService.SendEmailAsync(new SendEmail(
+            userDto.Name, 
+            userDto.Email, 
+            "Registration", 
+            "Your account has been created"));
     }
 }
