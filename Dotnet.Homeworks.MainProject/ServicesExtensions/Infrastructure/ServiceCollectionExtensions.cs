@@ -1,7 +1,4 @@
-using System.Reflection;
 using Dotnet.Homeworks.Features.Helpers;
-using Dotnet.Homeworks.Infrastructure.Services;
-using Dotnet.Homeworks.Infrastructure.Validation.Behaviors;
 using Dotnet.Homeworks.Infrastructure.Validation.PermissionChecker.DependencyInjectionExtensions;
 using Dotnet.Homeworks.Mediator.DependencyInjectionExtensions;
 using FluentValidation;
@@ -18,8 +15,7 @@ public static class ServiceCollectionExtensions
         services.AddPermissionChecks(AssemblyReference.Assembly);
         
         services.AddMediator(AssemblyReference.Assembly);
-        services.AddPipelineBehaviorsForFeaturesNamespace(
-            Features.UserManagement.DirectoryReference.Namespace,
+        services.AddPipelineBehaviorsForFeaturesRequests(
             AssemblyReference.Assembly, 
             Dotnet.Homeworks.Infrastructure.Helpers.AssemblyReference.Assembly);
 

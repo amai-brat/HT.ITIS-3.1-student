@@ -5,18 +5,13 @@ namespace Dotnet.Homeworks.Mediator.Helpers;
 public static class PipelineBehaviorFinder
 {
     // e.g. (IPipelineBehavior<RequestA, ResponseA>, ValidationBehavior<RequestA, ResponseA>)
-    public static List<(Type Iface, Type Impl)> FindPipelineBehaviorsInNamespace(
-        string @namespace, 
-        Assembly namespaceAssembly, 
+    public static List<(Type Iface, Type Impl)> GetPipelineBehaviors(
+        Assembly requestsAssembly, 
         Assembly pipelineBehaviorsAssembly)
     {
-        var types = namespaceAssembly.GetTypes();
-        var typesInNamespace = types
-            .Where(type => type.FullName != null && 
-                           type.FullName.StartsWith(@namespace))
-            .ToList();
+        var types = requestsAssembly.GetTypes();
         
-        var requestHandlerTypes = ReflectionHelper.GetRequestHandlers(typesInNamespace);
+        var requestHandlerTypes = ReflectionHelper.GetRequestHandlers(types);
         var reqAndResps = GetRequestAndResponseTuples(requestHandlerTypes.Select(x => x.Iface));
         var openPipeImpls = GetOpenPipelineBehaviorImpls(pipelineBehaviorsAssembly.GetTypes());
         

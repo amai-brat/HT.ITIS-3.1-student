@@ -1,32 +1,43 @@
 using Dotnet.Homeworks.Domain.Abstractions.Repositories;
 using Dotnet.Homeworks.Domain.Entities;
+using MongoDB.Driver;
 
 namespace Dotnet.Homeworks.DataAccess.Repositories;
 
 public class OrderRepository : IOrderRepository
 {
-    public Task<IEnumerable<Order>> GetAllOrdersFromUserAsync(Guid userId, CancellationToken cancellationToken)
+    private readonly IMongoCollection<Order> _orders;
+
+    public OrderRepository(IMongoCollection<Order> mongoCollection)
     {
-        throw new NotImplementedException();
+        _orders = mongoCollection;
     }
 
-    public Task<Order?> GetOrderByGuidAsync(Guid orderId, CancellationToken cancellationToken)
+    public async Task<IEnumerable<Order>> GetAllOrdersFromUserAsync(Guid userId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var result = await _orders.Find(x => x.OrdererId == userId).ToListAsync(cancellationToken);
+        return result;
     }
 
-    public Task DeleteOrderByGuidAsync(Guid orderId, CancellationToken cancellationToken)
+    public async Task<Order?> GetOrderByGuidAsync(Guid orderId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+       var result = await _orders.Find(x => x.Id == orderId).FirstOrDefaultAsync(cancellationToken);
+       return result;
     }
 
-    public Task UpdateOrderAsync(Order order, CancellationToken cancellationToken)
+    public async Task DeleteOrderByGuidAsync(Guid orderId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await _orders.DeleteOneAsync(x => x.Id == orderId, cancellationToken);
     }
 
-    public Task<Guid> InsertOrderAsync(Order order, CancellationToken cancellationToken)
+    public async Task UpdateOrderAsync(Order order, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await _orders.ReplaceOneAsync(x => x.Id == order.Id, order, cancellationToken: cancellationToken);
+    }
+
+    public async Task<Guid> InsertOrderAsync(Order order, CancellationToken cancellationToken)
+    {
+        await _orders.InsertOneAsync(order, cancellationToken: cancellationToken);
+        return order.Id;
     }
 }

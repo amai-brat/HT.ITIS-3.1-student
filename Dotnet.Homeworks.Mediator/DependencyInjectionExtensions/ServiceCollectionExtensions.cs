@@ -15,15 +15,13 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddPipelineBehaviorsForFeaturesNamespace(
+    public static IServiceCollection AddPipelineBehaviorsForFeaturesRequests(
         this IServiceCollection services, 
-        string @namespace,  
-        Assembly namespaceAssembly, 
+        Assembly requestsAssembly, 
         Assembly pipelineBehaviorsAssembly)
     {
-        var pipes = PipelineBehaviorFinder.FindPipelineBehaviorsInNamespace(
-            @namespace, 
-            namespaceAssembly, 
+        var pipes = PipelineBehaviorFinder.GetPipelineBehaviors(
+            requestsAssembly, 
             pipelineBehaviorsAssembly);
         
         foreach (var (iface, impl) in pipes)

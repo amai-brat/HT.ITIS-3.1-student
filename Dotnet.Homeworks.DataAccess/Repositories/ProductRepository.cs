@@ -19,6 +19,12 @@ public class ProductRepository : IProductRepository
         return Task.FromResult(_dbContext.Products.AsEnumerable());
     }
 
+    public async Task<Product?> GetProductByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var product = await _dbContext.Products.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+        return product;
+    }
+
     public async Task DeleteProductByGuidAsync(Guid id, CancellationToken cancellationToken)
     {
         var product = await _dbContext.Products.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);

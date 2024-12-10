@@ -16,12 +16,16 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Default: "Host=dotnet_postgres;Username=user;Password=password;Database=homework"
+      MongoDbConfig__ConnectionString: "mongodb://abober:joepeach@dotnet_mongodb:27017"
+      MongoDbConfig__DatabaseName: "dotnet_homework"
+      MongoDbConfig__OrdersCollectionName: "orders"
       RabbitMqConfig__Username: rahmatullin
       RabbitMqConfig__Password: rahmat
       RabbitMqConfig__Hostname: dotnet_rabbitmq
     depends_on:
       - dotnet_postgres
       - dotnet_rabbitmq
+      - dotnet_mongodb
 
   dotnet_mailing:
     image: dotnet-web-mailing
@@ -67,7 +71,7 @@ services:
       ASPNETCORE_URLS: http://*:8082
       MinioConfig__Username: user
       MinioConfig__Password: password
-      MinioConfig__Endpoint: dotnet_minio
+      MinioConfig__Endpoint: minio
       MinioConfig__Port: 9000
       MinioConfig__WithSsl: false
     depends_on:
@@ -75,6 +79,7 @@ services:
 
   dotnet_minio:
     image: minio/minio:latest
+    hostname: minio
     command: server --console-address ":9001" /data
     ports:
       - "9002:9000"
@@ -83,9 +88,13 @@ services:
       MINIO_ROOT_USER: user
       MINIO_ROOT_PASSWORD: password
     
-
-#  dotnet_mongodb:
-#    image: mongo:latest
+  dotnet_mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: abober
+      MONGO_INITDB_ROOT_PASSWORD: joepeach
 #  
 #  dotnet_jaeger:
 #    image: jaegertracing/all-in-one:latest

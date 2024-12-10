@@ -1,11 +1,14 @@
+using Dotnet.Homeworks.Features.Orders.PermissionChecks;
+using Dotnet.Homeworks.Infrastructure.Cqrs.Queries;
+
 namespace Dotnet.Homeworks.Features.Orders.Queries.GetOrder;
 
-public class GetOrderQuery // TODO: implement interface
+public class GetOrderQuery : IQuery<GetOrderDto>, IOwnedOrderRequest
 {
-    public GetOrderQuery(Guid id)
+    public GetOrderQuery(Guid orderId)
     {
-        Id = id;
+        OrderId = orderId;
     }
 
-    public Guid Id { get; init; }
+    public Guid OrderId { get; init; }
 }

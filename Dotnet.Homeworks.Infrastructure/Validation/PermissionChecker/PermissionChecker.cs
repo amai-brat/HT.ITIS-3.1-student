@@ -7,20 +7,24 @@ namespace Dotnet.Homeworks.Infrastructure.Validation.PermissionChecker;
 
 public class PermissionChecker : IPermissionChecker
 {
+    private readonly List<TypeInfo> _securedRequestIfaces;
     private readonly IServiceProvider _serviceProvider;
 
     public PermissionChecker(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
+
+        _securedRequestIfaces = AppDomain.CurrentDomain
+            .GetAssemblies()
+            .SelectMany(x => x.DefinedTypes)
+            .Where(x => x.IsInterface &&
+                        x.GetInterfaces().Contains(typeof(ISecuredRequest)))
+            .ToList();
     }
     
     public async Task<TResponse> Check<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken)
     {
-        if (!typeof(TRequest)
-                .GetInterfaces()
-                .Any(x =>
-                    x == typeof(IClientRequest) ||
-                    x == typeof(IAdminRequest)))
+        if (typeof(TRequest).GetInterfaces().All(x => x != typeof(ISecuredRequest)))
         {
             return (TResponse)ResultFactory.Create(true, typeof(TResponse));
         }
@@ -41,11 +45,12 @@ public class PermissionChecker : IPermissionChecker
 
     private Type GetPermissionCheckIfaceType(Type requestType)
     {
-        var ifaces = new[]
-        {
-            requestType.GetInterface(nameof(IClientRequest)),
-            requestType.GetInterface(nameof(IAdminRequest))
-        };
+        var ifaces = _securedRequestIfaces.Select(x => requestType.GetInterface(x.Name));
+        // var ifaces = new[]
+        // {
+        //     requestType.GetInterface(nameof(IClientRequest)),
+        //     requestType.GetInterface(nameof(IAdminRequest))
+        // };
 
         return typeof(IPermissionCheck<>)
             .MakeGenericType(ifaces.First(x => x is not null) 

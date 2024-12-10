@@ -55,6 +55,7 @@ public class ImageStorage : IStorage<Image>
                     await stream.CopyToAsync(content, ct);
                 }), cancellationToken);
 
+            content.Position = 0;
             return new Image(content, objectStat.ObjectName, objectStat.ContentType, objectStat.MetaData);
         }
         catch (Exception)

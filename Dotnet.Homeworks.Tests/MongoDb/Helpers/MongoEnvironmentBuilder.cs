@@ -1,13 +1,16 @@
 ﻿using System.Reflection;
 using System.Security.Claims;
 using Dotnet.Homeworks.Domain.Abstractions.Repositories;
+using Dotnet.Homeworks.Infrastructure.Services;
 using Dotnet.Homeworks.Infrastructure.UnitOfWork;
 using Dotnet.Homeworks.Infrastructure.Validation.PermissionChecker.DependencyInjectionExtensions;
+using Dotnet.Homeworks.Mailing.API.Services;
 using Dotnet.Homeworks.Mediator;
 using Dotnet.Homeworks.Mediator.DependencyInjectionExtensions;
 using Dotnet.Homeworks.Tests.Shared.RepositoriesMocks;
 using Dotnet.Homeworks.Tests.Shared.TestEnvironmentBuilder;
 using FluentValidation;
+using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -39,6 +42,10 @@ public class MongoEnvironmentBuilder : TestEnvironmentBuilder<MongoEnvironment>
         configureServices += s => s
             .AddSingleton<IOrderRepository, OrderRepositoryMock>()
             .AddSingleton<IProductRepository, ProductRepositoryMock>()
+            .AddSingleton<IRegistrationService, RegistrationService>()
+            .AddSingleton<ICommunicationService, CommunicationService>()
+            .AddSingleton(Substitute.For<IMailingService>())
+            .AddMassTransitTestHarness()
             .AddSingleton(Substitute.For<IUnitOfWork>())
             .AddSingleton<IUserRepository, UserRepositoryMock>()
             .AddMediator(FeaturesAssembly)
