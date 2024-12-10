@@ -67,7 +67,10 @@ public class MongoEnvironmentBuilder : TestEnvironmentBuilder<MongoEnvironment>
     private IHttpContextAccessor InitializeContextAccessor()
     {
         _contextAccessor = new HttpContextAccessor();
-        _contextAccessor.HttpContext = new DefaultHttpContext();
+        _contextAccessor.HttpContext = new DefaultHttpContext
+        {
+            RequestServices = ServiceProvider!
+        };
         return _contextAccessor;
     }
 
