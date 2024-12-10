@@ -1,25 +1,100 @@
-version: '3.8'
 services:
   dotnet_postgres:
     image: postgres:alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: homework
     
+  dotnet_main:
+    image: dotnet-web-main
+    build:
+      context: .
+      dockerfile: Dotnet.Homeworks.MainProject/Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=dotnet_postgres;Username=user;Password=password;Database=homework"
+      MongoDbConfig__ConnectionString: "mongodb://abober:joepeach@dotnet_mongodb:27017"
+      MongoDbConfig__DatabaseName: "dotnet_homework"
+      MongoDbConfig__OrdersCollectionName: "orders"
+      RabbitMqConfig__Username: rahmatullin
+      RabbitMqConfig__Password: rahmat
+      RabbitMqConfig__Hostname: dotnet_rabbitmq
+    depends_on:
+      - dotnet_postgres
+      - dotnet_rabbitmq
+      - dotnet_mongodb
+
+  dotnet_mailing:
+    image: dotnet-web-mailing
+    build:
+      context: .
+      dockerfile: Dotnet.Homeworks.Mailing.API/Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://*:8081
+      RabbitMqConfig__Username: rahmatullin
+      RabbitMqConfig__Password: rahmat
+      RabbitMqConfig__Hostname: dotnet_rabbitmq
+      EmailConfig__Email: lenagolovach@gmail.com
+      EmailConfig__Host: smtp.gmail.com
+      EmailConfig__Port: 587
+      EmailConfig__Password: abobabaobab
+    depends_on:
+      - dotnet_rabbitmq
+      
   dotnet_rabbitmq:
-    image: rabbitmq:3-alpine
-    
+    image: rabbitmq:3-management-alpine
+    hostname: dotnet_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: rahmatullin
+      RABBITMQ_DEFAULT_PASS: rahmat
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: -rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648
+    ports:
+      - "15672:15672"
+    volumes:
+      - ~/volumes/hw_rabbitmq:/var/lib/rabbitmq:rw
+
+  dotnet_storage:
+    image: dotnet-web-storage
+    build:
+      context: .
+      dockerfile: Dotnet.Homeworks.Storage.API/Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://*:8082
+      MinioConfig__Username: user
+      MinioConfig__Password: password
+      MinioConfig__Endpoint: minio
+      MinioConfig__Port: 9000
+      MinioConfig__WithSsl: false
+    depends_on:
+      - dotnet_minio
+
   dotnet_minio:
     image: minio/minio:latest
+    hostname: minio
+    command: server --console-address ":9001" /data
+    ports:
+      - "9002:9000"
+      - "9003:9001"
+    environment:
+      MINIO_ROOT_USER: user
+      MINIO_ROOT_PASSWORD: password
     
   dotnet_mongodb:
     image: mongo:latest
-    
-  dotnet_jaeger:
-    image: jaegertracing/all-in-one:latest
-    
-  dotnet_main:
-    image: dotnet-web
-    
-  dotnet_mailing:
-    image: dotnet-web
-    
-  dotnet_storage:
-    image: dotnet-web
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: abober
+      MONGO_INITDB_ROOT_PASSWORD: joepeach
+#  
+#  dotnet_jaeger:
+#    image: jaegertracing/all-in-one:latest
