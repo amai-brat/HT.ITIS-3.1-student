@@ -1,10 +1,11 @@
 using Dotnet.Homeworks.Data.DatabaseContext;
+using Dotnet.Homeworks.Features.Helpers;
 using Dotnet.Homeworks.Infrastructure.Services;
 using Dotnet.Homeworks.MainProject.Configuration;
 using Dotnet.Homeworks.MainProject.ServicesExtensions.DataAccess;
 using Dotnet.Homeworks.MainProject.ServicesExtensions.Infrastructure;
+using Dotnet.Homeworks.MainProject.ServicesExtensions.Mapper;
 using Dotnet.Homeworks.MainProject.ServicesExtensions.Masstransit;
-using Dotnet.Homeworks.MainProject.ServicesExtensions.MongoDb;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,6 +29,7 @@ builder.Services.AddMasstransitRabbitMq(builder.Configuration
 
 builder.Services.AddInfrastructure();
 builder.Services.AddDataAccess(builder.Configuration);
+builder.Services.AddMappers(AssemblyReference.Assembly);
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())

@@ -1,5 +1,6 @@
 using Dotnet.Homeworks.Domain.Abstractions.Repositories;
 using Dotnet.Homeworks.Features.Helpers;
+using Dotnet.Homeworks.Features.Orders.Mapping;
 using Dotnet.Homeworks.Features.Orders.Queries.GetOrder;
 using Dotnet.Homeworks.Infrastructure.Cqrs.Queries;
 using Dotnet.Homeworks.Shared.Dto;
@@ -10,13 +11,16 @@ namespace Dotnet.Homeworks.Features.Orders.Queries.GetOrders;
 public class GetOrdersQueryHandler : IQueryHandler<GetOrdersQuery, GetOrdersDto>
 {
     private readonly IOrderRepository _orderRepository;
+    private readonly IOrderMapper _orderMapper;
     private readonly HttpContext _httpContext;
 
     public GetOrdersQueryHandler(
         IOrderRepository orderRepository,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        IOrderMapper orderMapper)
     {
         _orderRepository = orderRepository;
+        _orderMapper = orderMapper;
         _httpContext = httpContextAccessor.HttpContext!;
     }
 
@@ -31,9 +35,8 @@ public class GetOrdersQueryHandler : IQueryHandler<GetOrdersQuery, GetOrdersDto>
             }
             
             var orders = await _orderRepository.GetAllOrdersFromUserAsync(userId.Value, cancellationToken);
-            return new Result<GetOrdersDto>(
-                new GetOrdersDto(orders.Select(x => new GetOrderDto(x.Id, x.ProductsIds))),
-                true);
+            var dto = _orderMapper.MapToGetOrdersDto(orders);
+            return new Result<GetOrdersDto>(dto, true);
         }
         catch (Exception ex)
         {

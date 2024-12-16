@@ -1,7 +1,6 @@
 ﻿using Dotnet.Homeworks.Domain.Abstractions.Repositories;
-using Dotnet.Homeworks.Domain.Entities;
+using Dotnet.Homeworks.Features.Users.Mapping;
 using Dotnet.Homeworks.Infrastructure.Cqrs.Commands;
-using Dotnet.Homeworks.Infrastructure.Dto;
 using Dotnet.Homeworks.Infrastructure.Services;
 using Dotnet.Homeworks.Infrastructure.UnitOfWork;
 using Dotnet.Homeworks.Infrastructure.Validation.Decorators;
@@ -15,11 +14,13 @@ public class CreateUserCommandHandler :
     CqrsDecorator<CreateUserCommand, Result<CreateUserDto>>, 
     ICommandHandler<CreateUserCommand, CreateUserDto>
 {
+    private readonly IUserMapper _userMapper;
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IRegistrationService _registrationService;
 
     public CreateUserCommandHandler(
+        IUserMapper userMapper,
         IEnumerable<IValidator<CreateUserCommand>> validators,
         IPermissionChecker permissionChecker,
         IUserRepository userRepository,
@@ -27,6 +28,7 @@ public class CreateUserCommandHandler :
         IRegistrationService registrationService
         ) : base(validators, permissionChecker)
     {
+        _userMapper = userMapper;
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
         _registrationService = registrationService;
@@ -42,16 +44,12 @@ public class CreateUserCommandHandler :
 
         try
         {
-            var user = new User
-            {
-                Name = request.Name,
-                Email = request.Email
-            };
+            var user = _userMapper.MapToUser(request);
 
             var id = await _userRepository.InsertUserAsync(user, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             
-            await _registrationService.RegisterAsync(new RegisterUserDto(request.Name, request.Email));
+            await _registrationService.RegisterAsync(_userMapper.MapToRegisterUserDto(request));
 
             return new Result<CreateUserDto>(new CreateUserDto(id), true);
         }

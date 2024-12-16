@@ -1,5 +1,5 @@
 using Dotnet.Homeworks.Domain.Abstractions.Repositories;
-using Dotnet.Homeworks.Domain.Entities;
+using Dotnet.Homeworks.Features.Products.Mapping;
 using Dotnet.Homeworks.Infrastructure.Cqrs.Commands;
 using Dotnet.Homeworks.Infrastructure.UnitOfWork;
 using Dotnet.Homeworks.Shared.Dto;
@@ -10,23 +10,24 @@ internal sealed class UpdateProductCommandHandler : ICommandHandler<UpdateProduc
 {
     private readonly IProductRepository _productRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IProductMapper _productMapper;
 
-    public UpdateProductCommandHandler(IProductRepository productRepository, IUnitOfWork unitOfWork)
+    public UpdateProductCommandHandler(
+        IProductRepository productRepository, 
+        IUnitOfWork unitOfWork,
+        IProductMapper productMapper)
     {
         _productRepository = productRepository;
         _unitOfWork = unitOfWork;
+        _productMapper = productMapper;
     }
 
     public async Task<Result> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            var product = new Product
-            {
-                Id = request.Guid,
-                Name = request.Name
-            };
-        
+            var product = _productMapper.MapToProduct(request);
+
             await _productRepository.UpdateProductAsync(product, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
