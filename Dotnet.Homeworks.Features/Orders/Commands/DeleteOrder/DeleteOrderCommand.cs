@@ -1,11 +1,14 @@
+using Dotnet.Homeworks.Features.Orders.PermissionChecks;
+using Dotnet.Homeworks.Infrastructure.Cqrs.Commands;
+
 namespace Dotnet.Homeworks.Features.Orders.Commands.DeleteOrder;
 
-public class DeleteOrderByGuidCommand // TODO: implement interface
+public class DeleteOrderByGuidCommand : ICommand, IOwnedOrderRequest
 {
-    public DeleteOrderByGuidCommand(Guid id)
+    public DeleteOrderByGuidCommand(Guid orderId)
     {
-        Id = id;
+        OrderId = orderId;
     }
 
-    public Guid Id { get; init; }
+    public Guid OrderId { get; init; }
 }

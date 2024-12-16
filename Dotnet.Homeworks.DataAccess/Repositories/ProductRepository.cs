@@ -1,27 +1,48 @@
+using Dotnet.Homeworks.Data.DatabaseContext;
 using Dotnet.Homeworks.Domain.Abstractions.Repositories;
 using Dotnet.Homeworks.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Dotnet.Homeworks.DataAccess.Repositories;
 
 public class ProductRepository : IProductRepository
 {
-    public Task<IEnumerable<Product>> GetAllProductsAsync(CancellationToken cancellationToken)
+    private readonly AppDbContext _dbContext;
+
+    public ProductRepository(AppDbContext dbContext)
     {
-        throw new NotImplementedException();
+        _dbContext = dbContext;
     }
 
-    public Task DeleteProductByGuidAsync(Guid id, CancellationToken cancellationToken)
+    public Task<IEnumerable<Product>> GetAllProductsAsync(CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return Task.FromResult(_dbContext.Products.AsEnumerable());
+    }
+
+    public async Task<Product?> GetProductByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var product = await _dbContext.Products.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+        return product;
+    }
+
+    public async Task DeleteProductByGuidAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var product = await _dbContext.Products.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+        if (product != null)
+        {
+            _dbContext.Products.Remove(product);
+        }
     }
 
     public Task UpdateProductAsync(Product product, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        _dbContext.Products.Update(product);
+        return Task.CompletedTask;
     }
 
-    public Task<Guid> InsertProductAsync(Product product, CancellationToken cancellationToken)
+    public async Task<Guid> InsertProductAsync(Product product, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var entry = await _dbContext.Products.AddAsync(product, cancellationToken);
+        return entry.Entity.Id;
     }
 }

@@ -6,17 +6,15 @@ public static class ServiceCollectionExtensions
 {
     public static void AddPermissionChecks(
         this IServiceCollection serviceCollection,
-        Assembly assembly
+        params Assembly[] assemblies
     )
     {
-        throw new NotImplementedException();
-    }
-    
-    public static void AddPermissionChecks(
-        this IServiceCollection serviceCollection,
-        Assembly[] assemblies
-    )
-    {
-        throw new NotImplementedException();
+        var tuples = PermissionChecker.GetPermissionChecksFrom(assemblies);
+        tuples.ForEach(tuple =>
+        {
+            serviceCollection.Add(new ServiceDescriptor(tuple.Iface, tuple.Impl, ServiceLifetime.Scoped));
+        });
+
+        serviceCollection.AddScoped<IPermissionChecker, PermissionChecker>();
     }
 }

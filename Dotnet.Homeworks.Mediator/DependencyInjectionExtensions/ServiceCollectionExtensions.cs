@@ -1,13 +1,46 @@
 using System.Reflection;
+using Dotnet.Homeworks.Mediator.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dotnet.Homeworks.Mediator.DependencyInjectionExtensions;
 
 public static class ServiceCollectionExtensions
 {
-    //TODO: Register your custom mediator
     public static IServiceCollection AddMediator(this IServiceCollection services, params Assembly[] handlersAssemblies)
     {
-        throw new NotImplementedException();
+        var helper = new ReflectionHelper(handlersAssemblies);
+        services.AddHandlers(helper.RequestHandlers, ServiceLifetime.Transient);
+        services.AddTransient<IMediator, Mediator>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddPipelineBehaviorsForFeaturesRequests(
+        this IServiceCollection services, 
+        Assembly requestsAssembly, 
+        Assembly pipelineBehaviorsAssembly)
+    {
+        var pipes = PipelineBehaviorFinder.GetPipelineBehaviors(
+            requestsAssembly, 
+            pipelineBehaviorsAssembly);
+        
+        foreach (var (iface, impl) in pipes)
+        {
+            services.Add(new ServiceDescriptor(iface, impl, ServiceLifetime.Transient));
+        }
+        
+        return services;
+    }
+    
+    private static IServiceCollection AddHandlers(this IServiceCollection services, 
+        IEnumerable<(Type, Type)> handlers, 
+        ServiceLifetime lifetime)
+    {
+        foreach (var (iface, impl) in handlers)
+        {
+            services.Add(new ServiceDescriptor(iface, impl, lifetime));
+        }
+
+        return services;
     }
 }

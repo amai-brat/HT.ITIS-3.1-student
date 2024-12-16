@@ -1,6 +1,9 @@
+using Dotnet.Homeworks.Features.Orders.PermissionChecks;
+using Dotnet.Homeworks.Infrastructure.Cqrs.Commands;
+
 namespace Dotnet.Homeworks.Features.Orders.Commands.UpdateOrder;
 
-public class UpdateOrderCommand // TODO: implement interface
+public class UpdateOrderCommand : ICommand, IOwnedOrderRequest
 {
     public UpdateOrderCommand(Guid orderId, IEnumerable<Guid> productsIds)
     {
