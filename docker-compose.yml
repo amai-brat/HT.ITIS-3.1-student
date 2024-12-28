@@ -24,10 +24,12 @@ services:
       RabbitMqConfig__Username: rahmatullin
       RabbitMqConfig__Password: rahmat
       RabbitMqConfig__Hostname: dotnet_rabbitmq
+      OpenTelemetryConfig__OtlpExporterEndpoint: "http://jaeger:4317"
     depends_on:
       - dotnet_postgres
       - dotnet_rabbitmq
       - dotnet_mongodb
+      - dotnet_jaeger
 
   dotnet_mailing:
     image: dotnet-web-mailing
@@ -97,6 +99,16 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: abober
       MONGO_INITDB_ROOT_PASSWORD: joepeach
-#  
-#  dotnet_jaeger:
-#    image: jaegertracing/all-in-one:latest
+
+  dotnet_jaeger:
+    image: jaegertracing/all-in-one:latest
+    hostname: jaeger
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+      - "5778:5778"
+      - "9411:9411"
+    environment:
+      COLLECTOR_OTLP_ENABLED: true
+    

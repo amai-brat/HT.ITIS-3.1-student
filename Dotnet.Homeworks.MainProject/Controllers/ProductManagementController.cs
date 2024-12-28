@@ -2,6 +2,7 @@ using Dotnet.Homeworks.Features.Products.Commands.DeleteProduct;
 using Dotnet.Homeworks.Features.Products.Commands.InsertProduct;
 using Dotnet.Homeworks.Features.Products.Commands.UpdateProduct;
 using Dotnet.Homeworks.Features.Products.Queries.GetProducts;
+using Dotnet.Homeworks.MainProject.Configuration;
 using Dotnet.Homeworks.Mediator;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,6 +30,9 @@ public class ProductManagementController : ControllerBase
     [HttpPost("product")]
     public async Task<IActionResult> InsertProduct(string name, CancellationToken cancellationToken)
     {
+        DiagnosticConfig.PostProductCounter.Add(1, 
+            new KeyValuePair<string, object?>("product.date", DateTime.UtcNow.ToShortDateString()));
+        
         var result = await _mediator.Send(new InsertProductCommand(name), cancellationToken);
         return result.IsSuccess 
             ? Created("products", result.Value) 

@@ -6,6 +6,7 @@ using Dotnet.Homeworks.MainProject.ServicesExtensions.DataAccess;
 using Dotnet.Homeworks.MainProject.ServicesExtensions.Infrastructure;
 using Dotnet.Homeworks.MainProject.ServicesExtensions.Mapper;
 using Dotnet.Homeworks.MainProject.ServicesExtensions.Masstransit;
+using Dotnet.Homeworks.MainProject.ServicesExtensions.OpenTelemetry;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +27,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddMasstransitRabbitMq(builder.Configuration
     .GetSection(nameof(RabbitMqConfig))
     .Get<RabbitMqConfig>()!);
+
+builder.Services.AddOpenTelemetry(builder.Configuration
+    .GetSection(nameof(OpenTelemetryConfig))
+    .Get<OpenTelemetryConfig>()!);
 
 builder.Services.AddInfrastructure();
 builder.Services.AddDataAccess(builder.Configuration);
